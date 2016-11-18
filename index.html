@@ -1,0 +1,104 @@
+<html>
+	<head>
+		<script type="text/javascript">
+			function mouseEvent(type, x, y, element, opts = {}) {
+				var evt;
+				if (opts.bubbles !== false) {
+					opts.bubbles = true;
+				}
+				var e = {
+					bubbles: opts.bubbles,
+					cancelable: (type != 'mousemove'),
+					view: window,
+					detail: 0,
+					screenX: x,
+					screenY: y,
+					clientX: x,
+					clientY: y,
+					ctrlKey: false,
+					altKey: false,
+					shiftKey: false,
+					metaKey: false,
+					button: 0,
+					relatedTarget: undefined
+				};
+				if (typeof( document.createEvent ) == 'function') {
+					evt = document.createEvent('MouseEvents');
+					evt.initMouseEvent(type,
+						e.bubbles, e.cancelable, e.view, e.detail,
+						e.screenX, e.screenY, e.clientX, e.clientY,
+						e.ctrlKey, e.altKey, e.shiftKey, e.metaKey,
+						e.button, document.body.parentNode);
+				} else if (document.createEventObject) {
+					evt = document.createEventObject();
+					for (var prop in e) {
+						evt[prop] = e[prop];
+					}
+					evt.button = { 0:1, 1:4, 2:2 }[evt.button] || evt.button;
+				}
+				console.log('evt:', evt);
+				if (!element) {
+					element = window;
+				}
+				element.dispatchEvent(evt);
+				return evt;
+			}
+
+			function raiseEventOn(element, type, opts) {
+				let coords = element.getBoundingClientRect();
+				let centerX = coords.left + coords.width / 2;
+				let centerY = coords.top + coords.height / 2;
+				mouseEvent(type, centerX, centerY, element, opts);
+
+			}
+		</script>
+		<script type="text/javascript">
+		var id = 0;
+		window.onload = function () {
+			console.log('ONLOAD')
+			window.addEventListener('mouseclick', function (e) {
+				console.log('fuck you')
+				var elem = document.createElement('div');
+				elem.style.position = 'absolute';
+				elem.style.width = '15px';
+				elem.style.height = '15px';
+				elem.style.border = 'solid 3px red';
+				elem.style.left = e.pageX;
+				elem.style.top = e.pageY;
+				elem.setAttribute('id', id++);
+				elem.addEventListener('mouseclick', function (e) {
+					alert('I am ' + e.target.getAttribute('id'));
+				});
+				document.body.appendChild(elem);
+			});
+		}
+
+			function bootup() {
+				console.log('BOOTUP')
+				mouseEvent('mouseclick', 200, 200);
+				mouseEvent('mouseclick', 800, 200);
+				mouseEvent('mouseclick', 800, 800);
+				mouseEvent('mouseclick', 200, 800);
+			}
+
+			function clickAreas() {
+				let point1 = document.getElementById(0);
+				let point2 = document.getElementById(1);
+				let point3 = document.getElementById(2);
+				let point4 = document.getElementById(3);
+
+
+
+
+				raiseEventOn(point1, 'mouseclick', {bubbles: false});
+				raiseEventOn(point2, 'mouseclick', {bubbles: false});
+				raiseEventOn(point3, 'mouseclick', {bubbles: false});
+				raiseEventOn(point4, 'mouseclick', {bubbles: false});
+			}
+		</script>
+	</head>
+	<body style="position: relative; width: 100%; height: 100%">
+		<button onclick="bootup()">Boot</button>
+		<button onclick="clickAreas()">Click Areas</button>
+	</body>
+</html>
